@@ -14,6 +14,7 @@ app.use(fileUpload({
     useTempFiles: true,
 }));
 
+app.use('/user', require('./routes/userRouter'))
 // app.get('/',(req,res)=>{
 //     res.send("hello world")
 // });
