@@ -5,6 +5,10 @@ import {showErrMsg, showSuccessMsg} from '../../utils/notification/Notification'
 import {dispatchLogin} from '../../../redux/actions/authAction'
 import {useDispatch} from 'react-redux'
 
+import { GoogleLogin } from 'react-google-login';
+import FacebookLogin from 'react-facebook-login';
+
+
 const initialState = {
     email : '',
     password : '',
@@ -41,6 +45,36 @@ function Login() {
             setUser({...user, err: err.response.data.msg, success: ''})
         }
     }
+    const responseGoogle = async (response) => {
+        try {
+            const res = await axios.post('/user/google_login', {tokenId: response.tokenId})
+
+            setUser({...user, error:'', success: res.data.msg})
+            localStorage.setItem('firstLogin', true)
+
+            dispatch(dispatchLogin())
+            history.push('/')
+        } catch (err) {
+            err.response.data.msg && 
+            setUser({...user, err: err.response.data.msg, success: ''})
+        }
+    }
+    const responseFacebook = async (response) => {
+        try {
+            const {accessToken, userID} = response
+            const res = await axios.post('/user/facebook_login', {accessToken, userID})
+
+            setUser({...user, error:'', success: res.data.msg})
+            localStorage.setItem('firstLogin', true)
+
+            dispatch(dispatchLogin())
+            history.push('/')
+        } catch (err) {
+            err.response.data.msg && 
+            setUser({...user, err: err.response.data.msg, success: ''})
+        }
+    }
+
     return (
         <div className="login_page">
             <h2>Login</h2>
@@ -63,6 +97,29 @@ function Login() {
                 </div>
                 
             </form>
+
+            <div className="hr">Or Login With</div>
+
+            <div className="social">
+
+                <GoogleLogin
+                    clientId='513676671932-8b423438f6k1k0ctjuivu3uidj1asjc0.apps.googleusercontent.com'
+                    buttonText="Login with google"
+                    onSuccess={responseGoogle}
+                    cookiePolicy={'single_host_origin'}
+                    
+                />
+                <FacebookLogin
+                    appId="778512503041640"
+                    autoLoad={false}
+                    fields="name,email,picture"
+                    callback={responseFacebook} 
+                />
+
+
+            </div>
+
+
             <p>New user? <Link to ="/register">Register</Link></p>
         </div>
     )
